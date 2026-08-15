@@ -1,0 +1,28 @@
+from pathlib import Path
+from model import estimate
+from export_excel import build_excel_export
+
+rows = [
+    {'course': 'English Advanced', 'teacher': 'A. Teacher', 'mark': 85},
+    {'course': 'Mathematics Advanced', 'teacher': 'B. Teacher', 'mark': 85},
+    {'course': 'Chemistry', 'teacher': 'C. Teacher', 'mark': 85},
+    {'course': 'Biology', 'teacher': 'D. Teacher', 'mark': 85},
+    {'course': 'Modern History', 'teacher': 'E. Teacher', 'mark': 85},
+    {'course': 'Business Studies', 'teacher': 'F. Teacher', 'mark': 85},
+]
+
+r = estimate(rows, 2)
+assert r['central_atar'] is not None
+assert len(r['chosen_units']) == 10
+assert sum(r['counts'].values()) == 10
+
+blob = build_excel_export(
+    {'student_name': 'Test Student', 'year_group': 'Year 12', 'student_id': '12345', 'prediction_date': '2026-08-15'},
+    rows,
+    r,
+)
+assert blob[:2] == b'PK'
+assert len(blob) > 5000
+Path('/mnt/data/atar_estimator_v2/sample_export.xlsx').write_bytes(blob)
+print('central_atar=', r['central_atar'])
+print('excel_bytes=', len(blob))
